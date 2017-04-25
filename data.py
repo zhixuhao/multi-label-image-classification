@@ -27,7 +27,7 @@ class dataProcess(object):
 		convert str to nparray
 		ex. '[0 1 0 1 0]' => [0,1,0,1,0]
 		'''
-		strarr = strin[1, len(strin)-1].split(" ")
+		strarr = strin[1:len(strin)-1].split(" ")
 		for i in range(len(strarr)):
 			strarr[i] = int(strarr[i])
 		return np.array(strarr)
