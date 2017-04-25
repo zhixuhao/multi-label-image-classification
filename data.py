@@ -41,7 +41,7 @@ class dataProcess(object):
 		imgs = glob.glob(self.data_path+"/*."+self.img_type)
 		imgdatas = np.ndarray((len(imgs),self.out_rows,self.out_cols,3), dtype=np.uint8)
 		imglabels = np.ndarray((len(imgs),self.num_class), dtype=np.uint8)
-		df = pd.read_csv(label_path + '/train_tap.csv')
+		df = pd.read_csv(self.label_path + '/train_tap.csv')
 		npdf = df.values[:,1]
 		for i in range(len(imgs)):
 			midname = 'train_' + str(i) + '.' + self.img_type
