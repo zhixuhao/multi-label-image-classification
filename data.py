@@ -48,7 +48,7 @@ class dataProcess(object):
 			img = load_img(self.data_path + "/" + midname)
 			img = img_to_array(img)
 			imgdatas[i] = img
-			imglabels[i] = strToarr(npdf[i])
+			imglabels[i] = self.strToarr(npdf[i])
 			if i % 100 == 0:
 				print('Done: {0}/{1} images'.format(i, len(imgs)))
 			i += 1
