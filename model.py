@@ -30,7 +30,7 @@ class multiNet(object):
 	def load_data(self):
 
 		mydata = dataProcess(self.img_rows, self.img_cols)
-		imgs_train, imgs_label_train = mydata.load_train_data(reverse=True)
+		imgs_train, imgs_label_train = mydata.load_train_data()
 		imgs_test = mydata.load_test_data()
 		return imgs_train, imgs_label_train, imgs_test
 
