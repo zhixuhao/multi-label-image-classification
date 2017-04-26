@@ -75,6 +75,8 @@ class multiNet(object):
 		#conv5 = Dropout(0.5)(conv5)
 		pool5 = MaxPooling2D(pool_size=(2, 2))(conv5)
 
+		pool5 = Flatten()(pool5)
+
 		fc6 = Dense(4096, activation = 'relu')(pool5)
 		fc6 = Dropout(0.5)(fc6)
 
