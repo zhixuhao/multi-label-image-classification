@@ -87,6 +87,7 @@ class dataProcess(object):
 		#imgs_mask_train = imgs_mask_train.astype('float32')
 		imgs_train /= 255
 		mean = imgs_train.mean(axis = 0)
+		np.save(self.npy_path + '/imgs_train_mean.npy', mean)
 		imgs_train -= mean	
 		return imgs_train,imgs_label_train
 
@@ -98,6 +99,7 @@ class dataProcess(object):
 		imgs_test = imgs_test.astype('float32')
 		imgs_test /= 255
 		mean = imgs_test.mean(axis = 0)
+		np.save(self.npy_path + '/imgs_test_mean.npy', mean)
 		imgs_test -= mean	
 		return imgs_test
 
