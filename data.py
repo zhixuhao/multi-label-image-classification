@@ -3,10 +3,11 @@ import numpy as np
 import pandas as pd
 import os
 import glob
+from libtiff import TIFF
 
 class dataProcess(object):
 
-	def __init__(self, out_rows, out_cols, data_path = "./data/train-jpg", label_path = "./data", test_path = "./data/test-jpg", npy_path = "./data/npydata", img_type = "jpg", num_class = 17):
+	def __init__(self, out_rows, out_cols, data_path = "./data/train-jpg", label_path = "./data", test_path = "./data/test-jpg", npy_path = "./data/npydata", img_type = "jpg", channels = 4, num_class = 17):
 
 		"""
 		
@@ -20,6 +21,7 @@ class dataProcess(object):
 		self.test_path = test_path
 		self.npy_path = npy_path
 		self.num_class = num_class
+		self.channels = channels
 
 	def strToarr(self, strin):
 
@@ -102,6 +104,36 @@ class dataProcess(object):
 		np.save(self.npy_path + '/imgs_test_mean.npy', mean)
 		imgs_test -= mean	
 		return imgs_test
+
+	def generator(self, batch_size = 16, shuffle = True):
+		imgs = glob.glob(self.data_path+"/*."+self.img_type)
+		df = pd.read_csv(self.label_path + '/train_tap.csv')
+		npdf = df.values[:,1]
+		num_imgs = len(imgs)
+		index_array = np.arange(num_imgs)
+		if shuffle:
+			index_array = np.random.permutation(num_imgs)
+		curindex = 0
+		while True:
+			arr = index_array[curindex:curindex+batch_size]
+			batch_x = np.zeros((batch_size,self.out_rows,self.out_cols,self.channels))
+			batch_y = np.zeros((batch_size,self.num_class))
+			for index,value in enumerate(arr):
+				midname = 'train_' + str(value) + '.' + self.img_type
+				img = TIFF.open(self.data_path+"/"+midname)
+				img = img.read_image()
+				img = np.array(img)
+				batch_x[index] = img
+				batch_y[index] = self.strToarr(npdf[value])
+			if num_imgs > curindex + batch_size:
+				curindex += batch_size
+			else:
+				curindex = num_imgs - batch_size
+			yield(batch_x,batch_y)
+
+
+
+
 
 if __name__ == "__main__":
 
