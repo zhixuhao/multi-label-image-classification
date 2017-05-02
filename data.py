@@ -129,7 +129,7 @@ class dataProcess(object):
 				curindex += batch_size
 			else:
 				curindex = num_imgs - batch_size
-			yield(batch_x,batch_y)
+			yield (batch_x,batch_y)
 
 
 
