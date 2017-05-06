@@ -10,7 +10,15 @@ from sklearn.metrics import fbeta_score
 
 def f2_score(y_true, y_pred):
     # fbeta_score throws a confusing error if inputs are not numpy arrays
-    y_true, y_pred, = np.array(y_true), np.array(y_pred)
+    # y_true = K.flatten(y_true)
+    # y_pred = K.flatten(y_pred)
+    # y_true = np.array(y_true)
+    # y_pred = np.array(y_pred)
+    # y_true = y_true.reshape((-1,17))
+    # y_pred = y_pred.reshape((-1,17))
+    y_ture = K.eval(y_true)
+    y_pred = K.eval(y_pred)
+    #y_true, y_pred, = np.array(y_true), np.array(y_pred)
     # We need to use average='samples' here, any other average method will generate bogus results
     return fbeta_score(y_true, y_pred, beta=2, average='samples')
 
@@ -169,6 +177,6 @@ class multiNet(object):
 
 if __name__ == '__main__':
 	mynet = multiNet()
-	#model = mynet.get_model()
+	model = mynet.get_model()
 	mynet.train()
 	#mynet.test()

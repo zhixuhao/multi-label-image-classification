@@ -3,7 +3,7 @@ import numpy as np
 import pandas as pd
 import os
 import glob
-from libtiff import TIFF
+#from libtiff import TIFF
 
 class dataProcess(object):
 
