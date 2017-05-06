@@ -126,7 +126,7 @@ class multiNet(object):
 	def train(self):
 
 		print("loading data")
-		imgs_train, train_label = self.load_val_data()
+		imgs_train, train_label = self.load_train_data()
 		print("loading train data done")
 		imgs_val, val_label = self.load_val_data()
 		print("loading val data done")
