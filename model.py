@@ -8,19 +8,24 @@ from keras import backend as K
 from sklearn.metrics import fbeta_score
 
 
-def f2_score(y_true, y_pred):
-    # fbeta_score throws a confusing error if inputs are not numpy arrays
-    # y_true = K.flatten(y_true)
-    # y_pred = K.flatten(y_pred)
-    # y_true = np.array(y_true)
-    # y_pred = np.array(y_pred)
-    # y_true = y_true.reshape((-1,17))
-    # y_pred = y_pred.reshape((-1,17))
-    y_ture = K.eval(y_true)
-    y_pred = K.eval(y_pred)
-    #y_true, y_pred, = np.array(y_true), np.array(y_pred)
-    # We need to use average='samples' here, any other average method will generate bogus results
-    return fbeta_score(y_true, y_pred, beta=2, average='samples')
+def fbeta(y_true, y_pred, threshold_shift=0):
+    beta = 2
+
+    # just in case of hipster activation at the final layer
+    y_pred = K.clip(y_pred, 0, 1)
+
+    # shifting the prediction threshold from .5 if needed
+    y_pred_bin = K.round(y_pred + threshold_shift)
+
+    tp = K.sum(K.round(y_true * y_pred_bin)) + K.epsilon()
+    fp = K.sum(K.round(K.clip(y_pred_bin - y_true, 0, 1)))
+    fn = K.sum(K.round(K.clip(y_true - y_pred, 0, 1)))
+
+    precision = tp / (tp + fp)
+    recall = tp / (tp + fn)
+
+    beta_squared = beta ** 2
+    return (beta_squared + 1) * (precision * recall) / (beta_squared * precision + recall + K.epsilon())
 
 
 
@@ -113,7 +118,7 @@ class multiNet(object):
 
 		model = Model(input = inputs, output = fc8)
 		#model.compile(optimizer = Adam(lr = 1e-4), loss = dice_coef_loss, metrics=[dice_coef,distance_loss])
-		model.compile(optimizer = Adam(lr = 1e-4), loss = 'binary_crossentropy', metrics=[f2_score,'accuracy'])																																												
+		model.compile(optimizer = Adam(lr = 1e-4), loss = 'binary_crossentropy', metrics=[fbeta])																																												
 
 		return model
 
@@ -121,7 +126,7 @@ class multiNet(object):
 	def train(self):
 
 		print("loading data")
-		imgs_train, train_label = self.load_train_data()
+		imgs_train, train_label = self.load_val_data()
 		print("loading train data done")
 		imgs_val, val_label = self.load_val_data()
 		print("loading val data done")
@@ -177,6 +182,6 @@ class multiNet(object):
 
 if __name__ == '__main__':
 	mynet = multiNet()
-	model = mynet.get_model()
+	#model = mynet.get_model()
 	mynet.train()
 	#mynet.test()
