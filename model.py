@@ -54,7 +54,7 @@ class multiNet(object):
 		#mydata = dataProcess(self.img_rows, self.img_cols)
 		#imgs_train, imgs_label_train = mydata.load_train_data()
 		#imgs_test = mydata.load_test_data()
-		imgs_val = np.load('./data/npydata/train_val.npy')
+		imgs_val = np.load('./data/npydata/val_data.npy')
 		imgs_label_val = np.load('./data/npydata/val_label.npy')
 		mean = imgs_val.mean(axis = 0)
 		np.save('./data/npydata/imgs_val_mean.npy', mean)
