@@ -5,18 +5,15 @@ from keras.callbacks import ModelCheckpoint, LearningRateScheduler
 from keras.optimizers import *
 from data import dataProcess
 from keras import backend as K
-from sklearn.metrics import matthews_corrcoef
-
-def dice_coef(y_true, y_pred):
-	smooth = 1.
-	y_true_f = K.flatten(y_true)
-	y_pred_f = K.flatten(y_pred)
-	intersection = K.sum(y_true_f * y_pred_f)
-	return (2. * intersection + smooth) / (K.sum(y_true_f*y_true_f) + K.sum(y_pred_f*y_pred_f) + smooth)
+from sklearn.metrics import fbeta_score
 
 
-def dice_coef_loss(y_true, y_pred):
-	return 1.-dice_coef(y_true, y_pred)
+def f2_score(y_true, y_pred):
+    # fbeta_score throws a confusing error if inputs are not numpy arrays
+    y_true, y_pred, = np.array(y_true), np.array(y_pred)
+    # We need to use average='samples' here, any other average method will generate bogus results
+    return fbeta_score(y_true, y_pred, beta=2, average='samples')
+
 
 
 class multiNet(object):
@@ -29,15 +26,36 @@ class multiNet(object):
 
 	def load_train_data(self):
 
-		mydata = dataProcess(self.img_rows, self.img_cols)
-		imgs_train, imgs_label_train = mydata.load_train_data()
+		#mydata = dataProcess(self.img_rows, self.img_cols)
+		#imgs_train, imgs_label_train = mydata.load_train_data()
 		#imgs_test = mydata.load_test_data()
+		imgs_train = np.load('./data/npydata/train_data.npy')
+		imgs_label_train = np.load('./data/npydata/train_label.npy')
+		mean = imgs_train.mean(axis = 0)
+		np.save('./data/npydata/imgs_train_mean.npy', mean)
+		imgs_train -= mean	
 		return imgs_train, imgs_label_train#, imgs_test
+
+	def load_val_data(self):
+
+		#mydata = dataProcess(self.img_rows, self.img_cols)
+		#imgs_train, imgs_label_train = mydata.load_train_data()
+		#imgs_test = mydata.load_test_data()
+		imgs_val = np.load('./data/npydata/train_val.npy')
+		imgs_label_val = np.load('./data/npydata/val_label.npy')
+		mean = imgs_val.mean(axis = 0)
+		np.save('./data/npydata/imgs_val_mean.npy', mean)
+		imgs_val -= mean	
+		return imgs_val, imgs_label_val#, imgs_test
 
 	def load_test_data(self):
 
-		mydata = dataProcess(self.img_rows, self.img_cols)
-		imgs_test = mydata.load_test_data()
+		#mydata = dataProcess(self.img_rows, self.img_cols)
+		#imgs_test = mydata.load_test_data()
+		imgs_test = np.load('./data/npydata/test_data.npy')
+		mean = imgs_test.mean(axis = 0)
+		np.save('./data/npydata/imgs_test_mean.npy', mean)
+		imgs_test -= mean	
 		return imgs_test
 
 	
@@ -48,7 +66,7 @@ class multiNet(object):
 		using vgg-16
 		'''
 
-		inputs = Input((self.img_rows, self.img_cols,3))
+		inputs = Input((self.img_rows, self.img_cols,4))
 
 		conv1 = Conv2D(64, 3, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal')(inputs)
 		conv1 = Conv2D(64, 3, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal')(conv1)
@@ -87,7 +105,7 @@ class multiNet(object):
 
 		model = Model(input = inputs, output = fc8)
 		#model.compile(optimizer = Adam(lr = 1e-4), loss = dice_coef_loss, metrics=[dice_coef,distance_loss])
-		model.compile(optimizer = Adam(lr = 1e-4), loss = 'binary_crossentropy', metrics=['accuracy'])																																												
+		model.compile(optimizer = Adam(lr = 1e-4), loss = 'binary_crossentropy', metrics=[f2_score,'accuracy'])																																												
 
 		return model
 
@@ -96,13 +114,15 @@ class multiNet(object):
 
 		print("loading data")
 		imgs_train, train_label = self.load_train_data()
-		print("loading data done")
+		print("loading train data done")
+		imgs_val, val_label = self.load_val_data()
+		print("loading val data done")
 		model = self.get_model()
 		print("got multinet")
 
 		model_checkpoint = ModelCheckpoint('multinet.hdf5', monitor='loss',verbose=1, save_best_only=True)
 		print('Fitting model...')
-		model.fit(imgs_train, train_label, batch_size=10, nb_epoch=20, verbose=1, shuffle=True, callbacks=[model_checkpoint])
+		model.fit(imgs_train, train_label, batch_size=32, nb_epoch=20, verbose=1, shuffle=True, validation_data=(imgs_val, val_label), callbacks=[model_checkpoint])
 
 	def test(self):
 
@@ -118,9 +138,9 @@ class multiNet(object):
 		arr_threshold = np.zeros(out.shape[1]) + 0.5
 		#arr_threshold = self.find_best_threshold(imgs_train, train_label)
 
-		y_pred = np.array([[1 if out[i,j]>=arr_threshold[j] else 0 for j in range(imgs_test.shape[1])] for i in range(len(imgs_test))])
+		#y_pred = np.array([[1 if out[i,j]>=arr_threshold[j] else 0 for j in range(imgs_test.shape[1])] for i in range(len(imgs_test))])
 		np.save('out.npy', out)
-		np.save('test_pred.npy', y_pred)
+		#np.save('test_pred.npy', y_pred)
 
 
 	def find_best_threshold(self, imgs_train, train_label):
@@ -151,4 +171,4 @@ if __name__ == '__main__':
 	mynet = multiNet()
 	#model = mynet.get_model()
 	mynet.train()
-	mynet.test()
+	#mynet.test()
