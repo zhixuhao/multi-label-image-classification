@@ -51,7 +51,7 @@ for row in tqdm(train_df):
         ft.write(row[0] + '\n')
         #train_data = np.delete(train_data,i,0)
         #train_label = np.delete(train_label,i,0)
-    i++
+    i += 1
 ft.close()
 train_data = np.delete(train_data,train_err_arr,0)
 train_label = np.delete(train_label,train_err_arr,0)
@@ -85,7 +85,7 @@ for row in tqdm(val_df):
         fv.write(row[0]+'\n')
         #val_data = np.delete(val_data,i,0)
         #val_label = np.delete(val_label,i,0)
-    i++
+    i += 1
 fv.close()
 val_data = np.delete(val_data,val_err_arr,0)
 val_label = np.delete(val_label,val_err_arr,0)
@@ -115,7 +115,7 @@ for row in tqdm(nptdf):
         fe.write(row[0]+'\n')
         #test_err_val.append(i)
         #test_data = np.delete(test_data,i,0)
-    i++    
+    i += 1    
 fe.close()
 #test_data = np.delete(val_data,val_err_arr,0)
 np.save('./data/npydata/test_data.npy', test_data)
